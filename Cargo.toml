@@ -1,0 +1,11 @@
+[package]
+name = "crypto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+num-bigint = "0.4"
+num-prime = "0.4"
+rand = "0.8"
+num-integer = "0.1"
+num-traits = "0.2"
