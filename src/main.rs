@@ -42,7 +42,8 @@ fn miller_rabin_test(n: &BigUint, k: usize) -> bool {
         d /= 2u32;
         s += 1;
     }
-
+ 
+    
     let mut rng = thread_rng();
     for _ in 0..k {
         let a = rng.gen_biguint_range(&BigUint::from(2u32), &(n - 2u32));
@@ -71,18 +72,18 @@ fn miller_rabin_test(n: &BigUint, k: usize) -> bool {
     
 
 
-fn find_d(a: BigInt, m: BigInt) -> BigInt {
-    let mut old_r = a.clone();
-    let mut r = m.clone();
+fn find_d(e: BigInt, n: BigInt) -> BigInt {
+    let mut old_r = e.clone();
+    let mut r = n.clone();
     let mut old_s = BigInt::one();
     let mut s = BigInt::zero();
 
-    while r > BigInt::zero() {
-        // BigInt division truncates, which is what we want.
+    while r > BigInt::zero() {//will stop when r is 0
+        
         let quot = &old_r / &r;
 
         let temp_r = r.clone();
-        r = &old_r - &quot * &r; // alternatively, r = oldR % r;
+        r = &old_r - &quot * &r; // r = oldR % r;
         old_r = temp_r;
 
         let temp_s = s.clone();
@@ -90,9 +91,9 @@ fn find_d(a: BigInt, m: BigInt) -> BigInt {
         old_s = temp_s;
     }
 
-    // Ensure the result is non-negative
+    // if d is negative
     if old_s < BigInt::zero() {
-        old_s += &m;
+        old_s += &n;
     }
 
     return  BigInt::from(old_s);
@@ -116,6 +117,7 @@ fn pre_initialized(e: &BigInt)->(BigInt, BigInt, BigInt, BigInt, BigInt, BigInt)
  let p = BigInt::from_str(p_str).expect("Failed to parse number");
  let q = BigInt::from_str(q_str).expect("Failed to parse number");
  let n= &p*&q;
+ println!("value of n: {}", n);
  let p_1= &p-1u32;
  let q_1= &q-1u32;
  let phi_n= &p_1*&q_1;
@@ -141,6 +143,7 @@ fn initilization(e: &BigInt)->(BigInt, BigInt, BigInt, BigInt, BigInt, BigInt){
     let prime_2= prime2.clone();
     println!("Second 1024-bit prime number: {}", prime2);
     let n= &prime1*& prime2;
+    println!("value of n: {}",n);
     let p_1= prime1-1u32;
     let q_1= prime2-1u32;
     // let gcd = p_1.gcd(&q_1);
@@ -182,6 +185,9 @@ fn initilization(e: &BigInt)->(BigInt, BigInt, BigInt, BigInt, BigInt, BigInt){
 fn encrypt(m: BigInt, e: &BigInt, n: &BigInt) -> BigInt {
     m.modpow(e, n)
 }
+
+
+
 // Decryption function
 fn decrypt(c: BigInt, d: &BigInt, n: &BigInt) -> BigInt {
    
@@ -312,6 +318,7 @@ fn main() {
         println!("d1 is {} times higher than d2", ratio_d1_d2);
     } 
 
+
     //plaintext
     let m = BigInt::from(65931u32);
     println!("encrypting plaintext={}", &m);
@@ -343,7 +350,7 @@ fn main() {
     let crt_decrypt_d1= Instant::now();
     let decrypted_message_crt_d1 = decrypt_crt(&s_rsa_ciphertext, &d_1, &prime1, &prime2);
     let crt_decrypt_d1_time = crt_decrypt_d1.elapsed();
-    println!("decryption time with CRT, D2: {:?}",crt_decrypt_d1_time);
+    println!("decryption time with CRT, D1: {:?}",crt_decrypt_d1_time);
     println!("decrypted msg with CRT, D1: \t {}",decrypted_message_crt_d1); 
 
     let crt_decrypt_d2= Instant::now();
@@ -363,11 +370,12 @@ fn main() {
         writeln!(file, "first prime(P):\t {}", prime1).expect("Failed to write to file");
         writeln!(file, "second prime(P):\t {}", prime2).expect("Failed to write to file");
         writeln!(file, "-----------------------------").expect("Failed to write to file");
+        writeln!(file, "N:\t {}", n).expect("Failed to write to file");
         writeln!(file, "phi_n Standard RSA:\t {}", phi_n).expect("Failed to write to file");
         writeln!(file, "psi_n LCM RSA:\t {}", psi_n).expect("Failed to write to file");
         writeln!(file, "d_1:\t {:?}", d_1).expect("Failed to write to file");
         writeln!(file, "d_2:\t {:?}", d_2).expect("Failed to write to file");
-        writeln!(file, "ratio:\t {:?}", ratio_d1_d2).expect("Failed to write to file");
+        writeln!(file, "D1 is \t {:?} times higher than D2", ratio_d1_d2).expect("Failed to write to file");
         writeln!(file, "++++++++++++++++++++++++++++").expect("Failed to write to file");
         writeln!(file, "Now encryption with plaintext: \t{}", m).expect("Failed to write to file");
         writeln!(file, "Ciphertext with Standard RSA:\t{}",s_rsa_ciphertext).expect("Failed to write to file");
